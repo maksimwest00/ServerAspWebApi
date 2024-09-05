@@ -10,5 +10,6 @@ namespace ServerAspWebApi.Model
         public string Address { get; set; }
         public DateTime DateBirthDay { get; set; }
         public string Sex { get; set; }
+        public int Region { get; set; }
     }
 }
