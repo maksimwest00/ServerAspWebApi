@@ -28,7 +28,6 @@ namespace ServerAspWebApi
             {
                 app.UseDeveloperExceptionPage();
             }
-
             app.UseHttpsRedirection();
 
             app.UseRouting();

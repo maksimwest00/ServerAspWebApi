@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ServerAspWebApi.Model;
+using System.Threading.Tasks;
 
 namespace ServerAspWebApi.Controllers
 {
@@ -7,25 +8,25 @@ namespace ServerAspWebApi.Controllers
     {
         //-Добавление записи
         [HttpPost("add")]
-        public abstract IActionResult AddRecord([FromBody] PatientModel patient);
+        public abstract Task<IActionResult> AddRecord([FromBody] PatientModel patient);
 
         //-Редактирование записи
         [HttpPost("edit")]
-        public abstract IActionResult EditRecord<T>([FromBody] T model);
+        public abstract Task<IActionResult> EditRecord<T>([FromBody] T model);
 
         //-Удаление записи
         [HttpPost("delete")]
-        public abstract IActionResult DeleteRecord([FromBody] int id);
+        public abstract Task<IActionResult> DeleteRecord([FromBody] int id);
 
         //-Получение записи по ид для редактирования
         [HttpGet("id={id}")]
-        public abstract IActionResult GetRecordByID(int id);
+        public abstract Task<IActionResult> GetRecordByID(int id);
 
         //-Получения списка записей для формы списка с поддержкой сортировки и постраничного возврата данных
         // (должна быть возможность через параметры указать по какому полю список должен быть отсортирован
         // и так же через параметры указать какой фрагмент списка (страницу) необходимо вернуть)
 
         [HttpGet]
-        public abstract IActionResult GetListRecordBySortAndPage([FromQuery] int page, [FromQuery] string sort);
+        public abstract Task<IActionResult> GetListRecordBySortAndPage([FromQuery] int page, [FromQuery] string sort);
     }
 }
