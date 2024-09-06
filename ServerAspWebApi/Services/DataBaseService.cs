@@ -14,11 +14,11 @@ namespace ServerAspWebApi.Services
         // Здесь реализация по взаимодействию с базой данных   
         // Пусть как ключ всех операций будет ID записи
 
-        public const string connectionString = "Server=(localdb)\\MSSQLLocalDB;Database=mainDataBase;Trusted_Connection=True;";
+        public const string ConnectionString = "Server=(localdb)\\MSSQLLocalDB;Database=mainDataBase;Trusted_Connection=True;";
 
         public void TEST_ConnectToDB()
         {
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
                 Debug.WriteLine("Подключение открыто");
@@ -128,7 +128,7 @@ namespace ServerAspWebApi.Services
         private bool TableExists(string tableName)
         {
             string query = $"SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = N'{tableName}'";
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
                 using (SqlCommand command = new SqlCommand(query, connection))
@@ -146,7 +146,7 @@ namespace ServerAspWebApi.Services
             {
                 string checkQuery = $"SELECT COUNT(*) FROM Участки WHERE Номер = '{region}'";
                 int count = 0;
-                using (SqlConnection connection = new SqlConnection(connectionString))
+                using (SqlConnection connection = new SqlConnection(ConnectionString))
                 {
                     connection.Open();
                     using (SqlCommand command = new SqlCommand(checkQuery, connection))
@@ -174,7 +174,7 @@ namespace ServerAspWebApi.Services
             {
                 string checkQuery = $"SELECT COUNT(*) FROM Специализации WHERE Название = N'{specialization}'";
                 int count = 0;
-                using (SqlConnection connection = new SqlConnection(connectionString))
+                using (SqlConnection connection = new SqlConnection(ConnectionString))
                 {
                     connection.Open();
                     using (SqlCommand command = new SqlCommand(checkQuery, connection))
@@ -202,7 +202,7 @@ namespace ServerAspWebApi.Services
             {
                 string checkQuery = $"SELECT COUNT(*) FROM Кабинеты WHERE Номер = '{cabinet}'";
                 int count = 0;
-                using (SqlConnection connection = new SqlConnection(connectionString))
+                using (SqlConnection connection = new SqlConnection(ConnectionString))
                 {
                     connection.Open();
                     using (SqlCommand command = new SqlCommand(checkQuery, connection))
@@ -235,7 +235,7 @@ namespace ServerAspWebApi.Services
             {
                 string checkQuery = $"SELECT COUNT(*) FROM Пациенты WHERE Фамилия = N'{patient.Фамилия}' AND Имя = N'{patient.Имя}' AND Отчество = N'{patient.Отчество}'";
                 int count = 0;
-                using (SqlConnection connection = new SqlConnection(connectionString))
+                using (SqlConnection connection = new SqlConnection(ConnectionString))
                 {
                     connection.Open();
                     using (SqlCommand command = new SqlCommand(checkQuery, connection))
@@ -268,7 +268,7 @@ namespace ServerAspWebApi.Services
             {
                 string checkQuery = $"SELECT COUNT(*) FROM Врачи WHERE ФИО = N'{patient.ФИО}' AND Кабинет = '{patient.Кабинет}' AND Специализация = N'{patient.Специализация}'";
                 int count = 0;
-                using (SqlConnection connection = new SqlConnection(connectionString))
+                using (SqlConnection connection = new SqlConnection(ConnectionString))
                 {
                     connection.Open();
                     using (SqlCommand command = new SqlCommand(checkQuery, connection))
@@ -293,11 +293,11 @@ namespace ServerAspWebApi.Services
 
         #region DB Execute's
 
-        private bool ExecuteNonQuery(string query)
+        public bool ExecuteNonQuery(string query)
         {
             try
             {
-                using (SqlConnection connection = new SqlConnection(connectionString))
+                using (SqlConnection connection = new SqlConnection(ConnectionString))
                 {
                     connection.Open();
                     using (SqlCommand command = new SqlCommand(query, connection))
@@ -315,9 +315,9 @@ namespace ServerAspWebApi.Services
             }
         }
 
-        private async Task ExecuteNonQueryAsync(string query)
+        public async Task ExecuteNonQueryAsync(string query)
         {
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
                 using (SqlCommand command = new SqlCommand(query, connection))
@@ -329,7 +329,7 @@ namespace ServerAspWebApi.Services
 
         #endregion
 
-        #region Методы Patient
+        #region Методы Patient Table
 
         public bool AddPatient(PatientModel patient)
         {
@@ -337,7 +337,26 @@ namespace ServerAspWebApi.Services
             return ExecuteNonQuery(insertQuery);
         }
 
-        public bool EditPatient(PatientModel patient)
+
+
+        #endregion
+    }
+
+    public class PatientTableEnviroment
+    {
+        private DataBaseService _dataBaseService;
+        public PatientTableEnviroment(DataBaseService dataBaseService)
+        {
+            _dataBaseService = dataBaseService;
+        }
+
+        public bool Add(PatientModel patient)
+        {
+            string insertQuery = $"INSERT INTO Пациенты (Фамилия, Имя, Отчество, Адрес, ДатаРождения, Пол, Участок) VALUES (N'{patient.LastName}', N'{patient.FirstName}', N'{patient.Patronymic}', N'{patient.Address}', '{patient.DateBirthDay:yyyy-MM-dd}', N'{patient.Sex}', {patient.Region})";
+            return _dataBaseService.ExecuteNonQuery(insertQuery);
+        }
+
+        public bool Edit(PatientModel patient)
         {
             // false - не удалось обновить или пациент не найден
             // true - все хорошо
@@ -353,7 +372,7 @@ namespace ServerAspWebApi.Services
                     Sex = @Sex,
                     Region = @Region
                 WHERE Id = @Id";
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            using (SqlConnection connection = new SqlConnection(DataBaseService.ConnectionString))
             {
                 connection.Open();
                 using (SqlCommand selectCommand = new SqlCommand(selectQuery, connection))
@@ -382,18 +401,18 @@ namespace ServerAspWebApi.Services
             }
         }
 
-        public bool DeletePatient(int patientID)
+        public bool Delete(int patientID)
         {
             string removeQuery = $"DELETE FROM Пациенты WHERE Id = '{patientID}';";
-            return ExecuteNonQuery(removeQuery);
+            return _dataBaseService.ExecuteNonQuery(removeQuery);
         }
 
-        public async Task<PatientModel> GetPatientByID(int patientID)
+        public async Task<PatientModel> GetByID(int patientID)
         {
             // -объект для редактирования должен содержать только ссылки (id) связанных записей из других таблиц,
             PatientModel patient = null;
             string query = $"SELECT * FROM Пациенты WHERE Id = '{patientID}'";
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            using (SqlConnection connection = new SqlConnection(DataBaseService.ConnectionString))
             {
                 SqlCommand command = new SqlCommand(query, connection);
                 connection.Open();
@@ -420,7 +439,7 @@ namespace ServerAspWebApi.Services
             return patient;
         }
 
-        public async Task<List<PatientModel>> GetPatientsByPageAndSory(int page, string sort)
+        public async Task<List<PatientModel>> GetListByPageAndSort(int page, string sort)
         {
             // Получаем список относительно страницы, количества элементов на страниц, названия таблицы и по какому столбцу
             // выполнять сортировку
@@ -440,7 +459,7 @@ namespace ServerAspWebApi.Services
                  WHERE RowNumber > ({page} * {countOnPage}) - {countOnPage}
                    AND RowNumber <= {page} * {countOnPage}";
 
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            using (SqlConnection connection = new SqlConnection(DataBaseService.ConnectionString))
             {
                 SqlCommand command = new SqlCommand(queryGetByPageAndSort, connection);
                 connection.Open();
@@ -468,7 +487,153 @@ namespace ServerAspWebApi.Services
             }
             return patientsList;
         }
-        
-        #endregion
+    }
+
+    public class DoctorTableEnviroment
+    {
+        private DataBaseService _dataBaseService;
+        public DoctorTableEnviroment(DataBaseService dataBaseService)
+        {
+            _dataBaseService = dataBaseService;
+        }
+
+        // TODO Переписать все тела методов под Doctor
+        public bool Add(PatientModel patient)
+        {
+            string insertQuery = $"INSERT INTO Пациенты (Фамилия, Имя, Отчество, Адрес, ДатаРождения, Пол, Участок) VALUES (N'{patient.LastName}', N'{patient.FirstName}', N'{patient.Patronymic}', N'{patient.Address}', '{patient.DateBirthDay:yyyy-MM-dd}', N'{patient.Sex}', {patient.Region})";
+            return _dataBaseService.ExecuteNonQuery(insertQuery);
+        }
+
+        public bool Edit(PatientModel patient)
+        {
+            // false - не удалось обновить или пациент не найден
+            // true - все хорошо
+            string selectQuery = "SELECT * FROM Пациенты WHERE Id = @Id";
+            string updateQuery = @"
+                UPDATE Пациенты 
+                SET 
+                    FirstName = @FirstName,
+                    LastName = @LastName,
+                    Patronymic = @Patronymic,
+                    Address = @Address,
+                    DateBirthDay = @DateBirthDay,
+                    Sex = @Sex,
+                    Region = @Region
+                WHERE Id = @Id";
+            using (SqlConnection connection = new SqlConnection(DataBaseService.ConnectionString))
+            {
+                connection.Open();
+                using (SqlCommand selectCommand = new SqlCommand(selectQuery, connection))
+                {
+                    selectCommand.Parameters.AddWithValue("@Id", patient.Id);
+                    using (SqlDataReader reader = selectCommand.ExecuteReader())
+                    {
+                        if (!reader.Read())
+                        {
+                            return false;
+                        }
+                    }
+                }
+                using (SqlCommand updateCommand = new SqlCommand(updateQuery, connection))
+                {
+                    updateCommand.Parameters.AddWithValue("@FirstName", patient.FirstName);
+                    updateCommand.Parameters.AddWithValue("@LastName", patient.LastName);
+                    updateCommand.Parameters.AddWithValue("@Patronymic", patient.Patronymic);
+                    updateCommand.Parameters.AddWithValue("@Address", patient.Address);
+                    updateCommand.Parameters.AddWithValue("@DateBirthDay", patient.DateBirthDay);
+                    updateCommand.Parameters.AddWithValue("@Sex", patient.Sex);
+                    updateCommand.Parameters.AddWithValue("@Region", patient.Region);
+                    int affectedRows = updateCommand.ExecuteNonQuery();
+                    return affectedRows > 0; // Возвращаем true, если обновление прошло успешно
+                }
+            }
+        }
+
+        public bool Delete(int patientID)
+        {
+            string removeQuery = $"DELETE FROM Пациенты WHERE Id = '{patientID}';";
+            return _dataBaseService.ExecuteNonQuery(removeQuery);
+        }
+
+        public async Task<PatientModel> GetByID(int patientID)
+        {
+            // -объект для редактирования должен содержать только ссылки (id) связанных записей из других таблиц,
+            PatientModel patient = null;
+            string query = $"SELECT * FROM Пациенты WHERE Id = '{patientID}'";
+            using (SqlConnection connection = new SqlConnection(DataBaseService.ConnectionString))
+            {
+                SqlCommand command = new SqlCommand(query, connection);
+                connection.Open();
+                using (SqlDataReader reader = await command.ExecuteReaderAsync())
+                {
+                    if (reader.HasRows) // если есть данные
+                    {
+                        patient = new PatientModel();
+                        while (await reader.ReadAsync()) // построчно считываем данные
+                        {
+                            patient.Id = reader.GetInt32(0);
+                            patient.LastName = reader.GetString(1);
+                            patient.FirstName = reader.GetString(2);
+                            patient.Patronymic = reader.GetString(3);
+                            patient.Address = reader.GetString(4);
+                            patient.DateBirthDay = reader.GetDateTime(5);
+                            patient.Sex = reader.GetString(6);
+                            patient.Region = reader.GetInt32(7);
+                        }
+
+                    }
+                }
+            }
+            return patient;
+        }
+
+        public async Task<List<PatientModel>> GetListByPageAndSort(int page, string sort)
+        {
+            // Получаем список относительно страницы, количества элементов на страниц, названия таблицы и по какому столбцу
+            // выполнять сортировку
+            // TODO Написать метод для получения возможных столбцов
+
+            var sortBy = "Id"; // TODO Надо сделать ENUM на все столбцы данной таблицы
+            var tableName = "Пациенты";
+            var countOnPage = "10";
+
+            List<PatientModel> patientsList = new List<PatientModel>();
+            string queryGetByPageAndSort =
+                @$"WITH SOURCE AS(
+                 SELECT ROW_NUMBER() OVER(ORDER BY {sortBy}) AS RowNumber, *
+                 FROM {tableName}
+                 )
+                 SELECT * FROM SOURCE
+                 WHERE RowNumber > ({page} * {countOnPage}) - {countOnPage}
+                   AND RowNumber <= {page} * {countOnPage}";
+
+            using (SqlConnection connection = new SqlConnection(DataBaseService.ConnectionString))
+            {
+                SqlCommand command = new SqlCommand(queryGetByPageAndSort, connection);
+                connection.Open();
+                using (SqlDataReader reader = await command.ExecuteReaderAsync())
+                {
+                    if (reader.HasRows) // если есть данные
+                    {
+                        while (await reader.ReadAsync()) // построчно считываем данные
+                        {
+                            for (int i = 1; i < reader.FieldCount; i++)
+                            {
+                                Debug.WriteLine($"{reader.GetName(i)} {reader.GetValue(i)}");
+                            }
+                            patientsList.Add(new PatientModel
+                            {
+                                Id = reader.GetInt32(1),
+                                LastName = reader.GetString(2),
+                                FirstName = reader.GetString(3),
+                                Patronymic = reader.GetString(4),
+                                Address = reader.GetString(5),
+                            });
+                        }
+                    }
+                }
+            }
+            return patientsList;
+        }
     }
 }
