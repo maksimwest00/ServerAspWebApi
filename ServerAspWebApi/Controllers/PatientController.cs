@@ -11,47 +11,84 @@ namespace ServerAspWebApi.Controllers
     public class PatientController : BaseMedicController
     {
         private readonly ILogger<PatientController> _logger;
-        private readonly DataBaseService _dataBaseService;
+        private readonly PatientTableEnviroment _patientTableEnviroment;
 
-        public PatientController(ILogger<PatientController> logger, DataBaseService dataBaseService)
+        public PatientController(ILogger<PatientController> logger, PatientTableEnviroment patientTableEnviroment)
         {
             _logger = logger;
-            _dataBaseService = dataBaseService;
+            _patientTableEnviroment = patientTableEnviroment;
         }
 
-        public override async Task<IActionResult> AddRecord(PatientModel patient)
+        [HttpPost("add")]
+        public async Task<IActionResult> AddRecord([FromBody] PatientModel patient)
         {
             // Просто добавить в базу данных новую запись с новым ID
-            return Ok();
+            // sample
+            // POST запрос на https://localhost:5001/patient/add
+            // в body raw application/json просто json PatientModel
+            // sample json
+            //{
+            //    "FirstName": "FirstNameTest",
+	        //    "LastName": "LastNameTest",
+	        //    "Patronymic": "PatronymicTest",
+	        //    "Address": "AddressTest",
+	        //    "Sex": "SexTest",
+	        //    "Region": 1
+            // }
+            bool result = await _patientTableEnviroment.Add(patient);
+            if (result)
+            {
+                return Ok(new { status = $"Добавлена новая запись о пацинте" });
+            }
+            return Ok(new { status = "Запись не добавлена, произошла ошибка" });
         }
 
         public override async Task<IActionResult> DeleteRecord(int id)
         {
-            // Просто удалить из базы данных запись по ID
-            return Ok();
+            // sample
+            // POST запрос на https://localhost:5001/patient/delete
+            // в body raw application/json просто id без json
+            bool result = await _patientTableEnviroment.Delete(id);
+            if (result)
+            {
+                return Ok(new { status = $"Удалена запись о пацинте {id}" });
+            }
+            return Ok(new { status = "Запись не удалена, произошла ошибка" });
         }
 
-        public override async Task<IActionResult> EditRecord<PatientModel>(PatientModel model)
+        [HttpPost("edit")]
+        public async Task<IActionResult> EditRecord([FromBody] PatientModel patient)
         {
-            // Просто по ID найти в базе данных запись и обновить ее
-            return Ok();
+            // sample https://localhost:5001/patient/edit
+            // в body raw application/ json просто json PatientModel
+            // sample json
+            //{
+            //    "Id": 3,
+            //    "FirstName": "FirstNameTest",
+            //    "LastName": "LastNameTest",
+            //    "Patronymic": "PatronymicTest",
+            //    "Address": "AddressTest",
+            //    "Sex": "SexTest",
+            //    "Region": 1
+            //}
+            bool result = await _patientTableEnviroment.Edit(patient as PatientModel);
+            if (result)
+            {
+                return Ok(new { status = $"Отредактирована запись о пацинте {(patient as PatientModel).Id}" });
+            }
+            return Ok(new { status = "Запись не отредактирована, произошла ошибка" });
         }
 
         public override async Task<IActionResult> GetRecordByID(int id)
         {
-            // Вернуть объект который содержит только ссылки (id) связанных записей из других таблицы
-            return Ok();
+            // sample https://localhost:5001/patient/id=2
+            return Ok(await _patientTableEnviroment.GetByID(id));
         }
 
         public override async Task<IActionResult> GetListRecordBySortAndPage(int page, string sort)
         {
-            // объект списка не должен содержать внешних ссылок, вместо них необходимо возвращать значение из связанной таблицы  (т.е. не id специализации врача, а название).
-
-            // https://localhost:5001/patient?page=1&sort=mysort
-            var a = page;
-            var b = sort;
-            var c = 1;
-            return Ok();
+            // sample https://localhost:5001/patient?page=1&sort=Id
+            return Ok(await _patientTableEnviroment.GetListByPageAndSort(page, sort));
         }
     }
 }

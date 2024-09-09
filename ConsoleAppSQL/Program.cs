@@ -1,6 +1,7 @@
 ﻿using ServerAspWebApi.Model;
 using ServerAspWebApi.Services;
 using System;
+using System.Threading.Tasks;
 
 namespace ConsoleAppSQL
 {
@@ -9,11 +10,6 @@ namespace ConsoleAppSQL
         static void Main(string[] args)
         {
             Console.WriteLine("ConsoleAppSQL!");
-
-            var dbService = new DataBaseService();
-            
-            var a = dbService.TEST_GetByPageQuery("1", "10", "Пациенты", "Имя");
-            var b = Console.ReadLine();
         }
     }
 }

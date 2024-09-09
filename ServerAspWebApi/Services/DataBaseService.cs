@@ -1,10 +1,7 @@
 using Microsoft.Data.SqlClient;
 using ServerAspWebApi.Model;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.Threading.Tasks;
 
 namespace ServerAspWebApi.Services
@@ -15,24 +12,6 @@ namespace ServerAspWebApi.Services
         // Пусть как ключ всех операций будет ID записи
 
         public const string ConnectionString = "Server=(localdb)\\MSSQLLocalDB;Database=mainDataBase;Trusted_Connection=True;";
-
-        public void TEST_ConnectToDB()
-        {
-            using (SqlConnection connection = new SqlConnection(ConnectionString))
-            {
-                connection.Open();
-                Debug.WriteLine("Подключение открыто");
-                Debug.WriteLine("Свойства подключения:");
-                Debug.WriteLine($"\tСтрока подключения: {connection.ConnectionString}");
-                Debug.WriteLine($"\tБаза данных: {connection.Database}");
-                Debug.WriteLine($"\tСервер: {connection.DataSource}");
-                Debug.WriteLine($"\tВерсия сервера: {connection.ServerVersion}");
-                Debug.WriteLine($"\tСостояние: {connection.State}");
-                Debug.WriteLine($"\tWorkstationld: {connection.WorkstationId}");
-            }
-            Debug.WriteLine("Подключение закрыто...");
-            Debug.WriteLine("Программа завершила работу.");
-        }
 
         public DataBaseService()
         {
@@ -70,7 +49,7 @@ namespace ServerAspWebApi.Services
                     ДатаРождения DATE,
                     Пол NVARCHAR(10),
                     Участок INT,
-                    FOREIGN KEY (Участок) REFERENCES Участки(Номер)
+                    FOREIGN KEY (Участок) REFERENCES Участки(Номер) ON DELETE CASCADE ON UPDATE CASCADE
                 )";
             string createDoctorsTableQuery = @"
                 CREATE TABLE Врачи (
@@ -79,49 +58,29 @@ namespace ServerAspWebApi.Services
                     Кабинет INT,
                     Специализация NVARCHAR(100),
                     Участок INT,
-                    FOREIGN KEY (Кабинет) REFERENCES Кабинеты(Номер),
-                    FOREIGN KEY (Специализация) REFERENCES Специализации(Название),
-                    FOREIGN KEY (Участок) REFERENCES Участки(Номер)
+                    FOREIGN KEY (Кабинет) REFERENCES Кабинеты(Номер) ON DELETE CASCADE ON UPDATE CASCADE,
+                    FOREIGN KEY (Специализация) REFERENCES Специализации(Название) ON DELETE CASCADE ON UPDATE CASCADE,
+                    FOREIGN KEY (Участок) REFERENCES Участки(Номер) ON DELETE CASCADE ON UPDATE CASCADE
                 )";
             if (!this.TableExists("Участки"))
             {
                 this.ExecuteNonQuery(createRegionsTableQuery);
             }
-            else
-            {
-                Console.WriteLine("Таблица Участки уже создана");
-            }
             if (!this.TableExists("Специализации"))
             {
                 this.ExecuteNonQuery(createSpecializationsTableQuery);
-            }
-            else
-            {
-                Console.WriteLine("Таблица Специализации уже создана");
             }
             if (!this.TableExists("Кабинеты"))
             {
                 this.ExecuteNonQuery(createCabinetesTableQuery);
             }
-            else
-            {
-                Console.WriteLine("Таблица Кабинеты уже создана");
-            }
             if (!this.TableExists("Пациенты"))
             {
                 this.ExecuteNonQuery(createPatientsTableQuery);
             }
-            else
-            {
-                Console.WriteLine("Таблица Пациенты уже создана");
-            }
             if (!this.TableExists("Врачи"))
             {
                 this.ExecuteNonQuery(createDoctorsTableQuery);
-            }
-            else
-            {
-                Console.WriteLine("Таблица Врачи уже создана");
             }
         }
 
@@ -158,11 +117,6 @@ namespace ServerAspWebApi.Services
                 {
                     string insertQuery = $"INSERT INTO Участки (Номер) VALUES ('{region}')";
                     ExecuteNonQuery(insertQuery);
-                    Debug.WriteLine($"Вставлен: {region}");
-                }
-                else
-                {
-                    Debug.WriteLine($"Запись '{region}' уже существует.");
                 }
             }
         }
@@ -186,11 +140,6 @@ namespace ServerAspWebApi.Services
                 {
                     string insertQuery = $"INSERT INTO Специализации (Название) VALUES (N'{specialization}')";
                     ExecuteNonQuery(insertQuery);
-                    Debug.WriteLine($"Вставлена специализация: {specialization}");
-                }
-                else
-                {
-                    Debug.WriteLine($"Специализация '{specialization}' уже существует.");
                 }
             }
         }
@@ -214,11 +163,6 @@ namespace ServerAspWebApi.Services
                 {
                     string insertQuery = $"INSERT INTO Кабинеты (Номер) VALUES ('{cabinet}')";
                     ExecuteNonQuery(insertQuery);
-                    Debug.WriteLine($"Вставлен кабинет: {cabinet}");
-                }
-                else
-                {
-                    Debug.WriteLine($"Кабинет '{cabinet}' уже существует.");
                 }
             }
         }
@@ -247,11 +191,6 @@ namespace ServerAspWebApi.Services
                 {
                     string insertQuery = $"INSERT INTO Пациенты (Фамилия, Имя, Отчество, Адрес, ДатаРождения, Пол, Участок) VALUES (N'{patient.Фамилия}', N'{patient.Имя}', N'{patient.Отчество}', N'{patient.Адрес}', '{patient.ДатаРождения:yyyy-MM-dd}', N'{patient.Пол}', {patient.Участок})";
                     ExecuteNonQuery(insertQuery);
-                    Debug.WriteLine($"Вставлен пациент: {patient.Фамилия} {patient.Имя} {patient.Отчество}");
-                }
-                else
-                {
-                    Debug.WriteLine($"Пациент '{patient.Фамилия} {patient.Имя} {patient.Отчество}' уже существует.");
                 }
             }
         }
@@ -280,11 +219,6 @@ namespace ServerAspWebApi.Services
                 {
                     string insertQuery = $"INSERT INTO Врачи (ФИО, Кабинет, Специализация, Участок) VALUES (N'{patient.ФИО}', '{patient.Кабинет}', N'{patient.Специализация}', '{patient.Участок}')";
                     ExecuteNonQuery(insertQuery);
-                    Debug.WriteLine($"Вставлен врач: {patient.ФИО} {patient.Кабинет} {patient.Специализация}");
-                }
-                else
-                {
-                    Debug.WriteLine($"Врач '{patient.ФИО} {patient.Кабинет} {patient.Специализация}' уже существует.");
                 }
             }
         }
@@ -307,23 +241,29 @@ namespace ServerAspWebApi.Services
                     }
                 }
             }
-            catch (SqlException ex)
+            catch
             {
-                // Логируем ошибку или обрабатываем ее по вашему усмотрению
-                Debug.WriteLine($"Ошибка выполнения запроса: {ex.Message}");
-                return false; // Возвращаем false в случае ошибки
+                return false;
             }
         }
 
-        public async Task ExecuteNonQueryAsync(string query)
+        public async Task<bool> ExecuteNonQueryAsync(string query)
         {
-            using (SqlConnection connection = new SqlConnection(ConnectionString))
+            try
             {
-                connection.Open();
-                using (SqlCommand command = new SqlCommand(query, connection))
+                using (SqlConnection connection = new SqlConnection(ConnectionString))
                 {
-                    await command.ExecuteNonQueryAsync();
+                    await connection.OpenAsync();
+                    using (SqlCommand command = new SqlCommand(query, connection))
+                    {
+                        int affectedRows = await command.ExecuteNonQueryAsync();
+                        return affectedRows > 0;
+                    }
                 }
+            }
+            catch
+            {
+                return false;
             }
         }
 
@@ -337,303 +277,6 @@ namespace ServerAspWebApi.Services
             return ExecuteNonQuery(insertQuery);
         }
 
-
-
         #endregion
-    }
-
-    public class PatientTableEnviroment
-    {
-        private DataBaseService _dataBaseService;
-        public PatientTableEnviroment(DataBaseService dataBaseService)
-        {
-            _dataBaseService = dataBaseService;
-        }
-
-        public bool Add(PatientModel patient)
-        {
-            string insertQuery = $"INSERT INTO Пациенты (Фамилия, Имя, Отчество, Адрес, ДатаРождения, Пол, Участок) VALUES (N'{patient.LastName}', N'{patient.FirstName}', N'{patient.Patronymic}', N'{patient.Address}', '{patient.DateBirthDay:yyyy-MM-dd}', N'{patient.Sex}', {patient.Region})";
-            return _dataBaseService.ExecuteNonQuery(insertQuery);
-        }
-
-        public bool Edit(PatientModel patient)
-        {
-            // false - не удалось обновить или пациент не найден
-            // true - все хорошо
-            string selectQuery = "SELECT * FROM Пациенты WHERE Id = @Id";
-            string updateQuery = @"
-                UPDATE Пациенты 
-                SET 
-                    FirstName = @FirstName,
-                    LastName = @LastName,
-                    Patronymic = @Patronymic,
-                    Address = @Address,
-                    DateBirthDay = @DateBirthDay,
-                    Sex = @Sex,
-                    Region = @Region
-                WHERE Id = @Id";
-            using (SqlConnection connection = new SqlConnection(DataBaseService.ConnectionString))
-            {
-                connection.Open();
-                using (SqlCommand selectCommand = new SqlCommand(selectQuery, connection))
-                {
-                    selectCommand.Parameters.AddWithValue("@Id", patient.Id);
-                    using (SqlDataReader reader = selectCommand.ExecuteReader())
-                    {
-                        if (!reader.Read())
-                        {
-                            return false;
-                        }
-                    }
-                }
-                using (SqlCommand updateCommand = new SqlCommand(updateQuery, connection))
-                {
-                    updateCommand.Parameters.AddWithValue("@FirstName", patient.FirstName);
-                    updateCommand.Parameters.AddWithValue("@LastName", patient.LastName);
-                    updateCommand.Parameters.AddWithValue("@Patronymic", patient.Patronymic);
-                    updateCommand.Parameters.AddWithValue("@Address", patient.Address);
-                    updateCommand.Parameters.AddWithValue("@DateBirthDay", patient.DateBirthDay);
-                    updateCommand.Parameters.AddWithValue("@Sex", patient.Sex);
-                    updateCommand.Parameters.AddWithValue("@Region", patient.Region);
-                    int affectedRows = updateCommand.ExecuteNonQuery();
-                    return affectedRows > 0; // Возвращаем true, если обновление прошло успешно
-                }
-            }
-        }
-
-        public bool Delete(int patientID)
-        {
-            string removeQuery = $"DELETE FROM Пациенты WHERE Id = '{patientID}';";
-            return _dataBaseService.ExecuteNonQuery(removeQuery);
-        }
-
-        public async Task<PatientModel> GetByID(int patientID)
-        {
-            // -объект для редактирования должен содержать только ссылки (id) связанных записей из других таблиц,
-            PatientModel patient = null;
-            string query = $"SELECT * FROM Пациенты WHERE Id = '{patientID}'";
-            using (SqlConnection connection = new SqlConnection(DataBaseService.ConnectionString))
-            {
-                SqlCommand command = new SqlCommand(query, connection);
-                connection.Open();
-                using (SqlDataReader reader = await command.ExecuteReaderAsync())
-                {
-                    if (reader.HasRows) // если есть данные
-                    {
-                        patient = new PatientModel();
-                        while (await reader.ReadAsync()) // построчно считываем данные
-                        {
-                            patient.Id = reader.GetInt32(0);
-                            patient.LastName = reader.GetString(1);
-                            patient.FirstName = reader.GetString(2);
-                            patient.Patronymic = reader.GetString(3);
-                            patient.Address = reader.GetString(4);
-                            patient.DateBirthDay = reader.GetDateTime(5);
-                            patient.Sex = reader.GetString(6);
-                            patient.Region = reader.GetInt32(7);
-                        }
-
-                    }
-                }
-            }
-            return patient;
-        }
-
-        public async Task<List<PatientModel>> GetListByPageAndSort(int page, string sort)
-        {
-            // Получаем список относительно страницы, количества элементов на страниц, названия таблицы и по какому столбцу
-            // выполнять сортировку
-            // TODO Написать метод для получения возможных столбцов
-
-            var sortBy = "Id"; // TODO Надо сделать ENUM на все столбцы данной таблицы
-            var tableName = "Пациенты";
-            var countOnPage = "10";
-
-            List<PatientModel> patientsList = new List<PatientModel>();
-            string queryGetByPageAndSort =
-                @$"WITH SOURCE AS(
-                 SELECT ROW_NUMBER() OVER(ORDER BY {sortBy}) AS RowNumber, *
-                 FROM {tableName}
-                 )
-                 SELECT * FROM SOURCE
-                 WHERE RowNumber > ({page} * {countOnPage}) - {countOnPage}
-                   AND RowNumber <= {page} * {countOnPage}";
-
-            using (SqlConnection connection = new SqlConnection(DataBaseService.ConnectionString))
-            {
-                SqlCommand command = new SqlCommand(queryGetByPageAndSort, connection);
-                connection.Open();
-                using (SqlDataReader reader = await command.ExecuteReaderAsync())
-                {
-                    if (reader.HasRows) // если есть данные
-                    {
-                        while (await reader.ReadAsync()) // построчно считываем данные
-                        {
-                            for (int i = 1; i < reader.FieldCount; i++)
-                            {
-                                Debug.WriteLine($"{reader.GetName(i)} {reader.GetValue(i)}");
-                            }
-                            patientsList.Add(new PatientModel
-                            {
-                                Id = reader.GetInt32(1),
-                                LastName = reader.GetString(2),
-                                FirstName = reader.GetString(3),
-                                Patronymic = reader.GetString(4),
-                                Address = reader.GetString(5),
-                            });
-                        }
-                    }
-                }
-            }
-            return patientsList;
-        }
-    }
-
-    public class DoctorTableEnviroment
-    {
-        private DataBaseService _dataBaseService;
-        public DoctorTableEnviroment(DataBaseService dataBaseService)
-        {
-            _dataBaseService = dataBaseService;
-        }
-
-        // TODO Переписать все тела методов под Doctor
-        public bool Add(PatientModel patient)
-        {
-            string insertQuery = $"INSERT INTO Пациенты (Фамилия, Имя, Отчество, Адрес, ДатаРождения, Пол, Участок) VALUES (N'{patient.LastName}', N'{patient.FirstName}', N'{patient.Patronymic}', N'{patient.Address}', '{patient.DateBirthDay:yyyy-MM-dd}', N'{patient.Sex}', {patient.Region})";
-            return _dataBaseService.ExecuteNonQuery(insertQuery);
-        }
-
-        public bool Edit(PatientModel patient)
-        {
-            // false - не удалось обновить или пациент не найден
-            // true - все хорошо
-            string selectQuery = "SELECT * FROM Пациенты WHERE Id = @Id";
-            string updateQuery = @"
-                UPDATE Пациенты 
-                SET 
-                    FirstName = @FirstName,
-                    LastName = @LastName,
-                    Patronymic = @Patronymic,
-                    Address = @Address,
-                    DateBirthDay = @DateBirthDay,
-                    Sex = @Sex,
-                    Region = @Region
-                WHERE Id = @Id";
-            using (SqlConnection connection = new SqlConnection(DataBaseService.ConnectionString))
-            {
-                connection.Open();
-                using (SqlCommand selectCommand = new SqlCommand(selectQuery, connection))
-                {
-                    selectCommand.Parameters.AddWithValue("@Id", patient.Id);
-                    using (SqlDataReader reader = selectCommand.ExecuteReader())
-                    {
-                        if (!reader.Read())
-                        {
-                            return false;
-                        }
-                    }
-                }
-                using (SqlCommand updateCommand = new SqlCommand(updateQuery, connection))
-                {
-                    updateCommand.Parameters.AddWithValue("@FirstName", patient.FirstName);
-                    updateCommand.Parameters.AddWithValue("@LastName", patient.LastName);
-                    updateCommand.Parameters.AddWithValue("@Patronymic", patient.Patronymic);
-                    updateCommand.Parameters.AddWithValue("@Address", patient.Address);
-                    updateCommand.Parameters.AddWithValue("@DateBirthDay", patient.DateBirthDay);
-                    updateCommand.Parameters.AddWithValue("@Sex", patient.Sex);
-                    updateCommand.Parameters.AddWithValue("@Region", patient.Region);
-                    int affectedRows = updateCommand.ExecuteNonQuery();
-                    return affectedRows > 0; // Возвращаем true, если обновление прошло успешно
-                }
-            }
-        }
-
-        public bool Delete(int patientID)
-        {
-            string removeQuery = $"DELETE FROM Пациенты WHERE Id = '{patientID}';";
-            return _dataBaseService.ExecuteNonQuery(removeQuery);
-        }
-
-        public async Task<PatientModel> GetByID(int patientID)
-        {
-            // -объект для редактирования должен содержать только ссылки (id) связанных записей из других таблиц,
-            PatientModel patient = null;
-            string query = $"SELECT * FROM Пациенты WHERE Id = '{patientID}'";
-            using (SqlConnection connection = new SqlConnection(DataBaseService.ConnectionString))
-            {
-                SqlCommand command = new SqlCommand(query, connection);
-                connection.Open();
-                using (SqlDataReader reader = await command.ExecuteReaderAsync())
-                {
-                    if (reader.HasRows) // если есть данные
-                    {
-                        patient = new PatientModel();
-                        while (await reader.ReadAsync()) // построчно считываем данные
-                        {
-                            patient.Id = reader.GetInt32(0);
-                            patient.LastName = reader.GetString(1);
-                            patient.FirstName = reader.GetString(2);
-                            patient.Patronymic = reader.GetString(3);
-                            patient.Address = reader.GetString(4);
-                            patient.DateBirthDay = reader.GetDateTime(5);
-                            patient.Sex = reader.GetString(6);
-                            patient.Region = reader.GetInt32(7);
-                        }
-
-                    }
-                }
-            }
-            return patient;
-        }
-
-        public async Task<List<PatientModel>> GetListByPageAndSort(int page, string sort)
-        {
-            // Получаем список относительно страницы, количества элементов на страниц, названия таблицы и по какому столбцу
-            // выполнять сортировку
-            // TODO Написать метод для получения возможных столбцов
-
-            var sortBy = "Id"; // TODO Надо сделать ENUM на все столбцы данной таблицы
-            var tableName = "Пациенты";
-            var countOnPage = "10";
-
-            List<PatientModel> patientsList = new List<PatientModel>();
-            string queryGetByPageAndSort =
-                @$"WITH SOURCE AS(
-                 SELECT ROW_NUMBER() OVER(ORDER BY {sortBy}) AS RowNumber, *
-                 FROM {tableName}
-                 )
-                 SELECT * FROM SOURCE
-                 WHERE RowNumber > ({page} * {countOnPage}) - {countOnPage}
-                   AND RowNumber <= {page} * {countOnPage}";
-
-            using (SqlConnection connection = new SqlConnection(DataBaseService.ConnectionString))
-            {
-                SqlCommand command = new SqlCommand(queryGetByPageAndSort, connection);
-                connection.Open();
-                using (SqlDataReader reader = await command.ExecuteReaderAsync())
-                {
-                    if (reader.HasRows) // если есть данные
-                    {
-                        while (await reader.ReadAsync()) // построчно считываем данные
-                        {
-                            for (int i = 1; i < reader.FieldCount; i++)
-                            {
-                                Debug.WriteLine($"{reader.GetName(i)} {reader.GetValue(i)}");
-                            }
-                            patientsList.Add(new PatientModel
-                            {
-                                Id = reader.GetInt32(1),
-                                LastName = reader.GetString(2),
-                                FirstName = reader.GetString(3),
-                                Patronymic = reader.GetString(4),
-                                Address = reader.GetString(5),
-                            });
-                        }
-                    }
-                }
-            }
-            return patientsList;
-        }
     }
 }
