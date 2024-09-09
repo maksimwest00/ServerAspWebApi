@@ -121,10 +121,6 @@ namespace ServerAspWebApi.Services
                     {
                         while (await reader.ReadAsync())
                         {
-                            for (int i = 1; i < reader.FieldCount; i++)
-                            {
-                                Debug.WriteLine($"{reader.GetName(i)} {reader.GetValue(i)}");
-                            }
                             patientsList.Add(new PatientModel
                             {
                                 Id = reader.GetInt32(1),

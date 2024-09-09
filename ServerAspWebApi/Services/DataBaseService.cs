@@ -1,9 +1,7 @@
 using Microsoft.Data.SqlClient;
 using ServerAspWebApi.Model;
 using System;
-using System.Collections;
 using System.Diagnostics;
-using System.Globalization;
 using System.Threading.Tasks;
 
 namespace ServerAspWebApi.Services
@@ -14,24 +12,6 @@ namespace ServerAspWebApi.Services
         // Пусть как ключ всех операций будет ID записи
 
         public const string ConnectionString = "Server=(localdb)\\MSSQLLocalDB;Database=mainDataBase;Trusted_Connection=True;";
-
-        public void TEST_ConnectToDB()
-        {
-            using (SqlConnection connection = new SqlConnection(ConnectionString))
-            {
-                connection.Open();
-                Debug.WriteLine("Подключение открыто");
-                Debug.WriteLine("Свойства подключения:");
-                Debug.WriteLine($"\tСтрока подключения: {connection.ConnectionString}");
-                Debug.WriteLine($"\tБаза данных: {connection.Database}");
-                Debug.WriteLine($"\tСервер: {connection.DataSource}");
-                Debug.WriteLine($"\tВерсия сервера: {connection.ServerVersion}");
-                Debug.WriteLine($"\tСостояние: {connection.State}");
-                Debug.WriteLine($"\tWorkstationld: {connection.WorkstationId}");
-            }
-            Debug.WriteLine("Подключение закрыто...");
-            Debug.WriteLine("Программа завершила работу.");
-        }
 
         public DataBaseService()
         {
@@ -86,41 +66,21 @@ namespace ServerAspWebApi.Services
             {
                 this.ExecuteNonQuery(createRegionsTableQuery);
             }
-            else
-            {
-                Console.WriteLine("Таблица Участки уже создана");
-            }
             if (!this.TableExists("Специализации"))
             {
                 this.ExecuteNonQuery(createSpecializationsTableQuery);
-            }
-            else
-            {
-                Console.WriteLine("Таблица Специализации уже создана");
             }
             if (!this.TableExists("Кабинеты"))
             {
                 this.ExecuteNonQuery(createCabinetesTableQuery);
             }
-            else
-            {
-                Console.WriteLine("Таблица Кабинеты уже создана");
-            }
             if (!this.TableExists("Пациенты"))
             {
                 this.ExecuteNonQuery(createPatientsTableQuery);
             }
-            else
-            {
-                Console.WriteLine("Таблица Пациенты уже создана");
-            }
             if (!this.TableExists("Врачи"))
             {
                 this.ExecuteNonQuery(createDoctorsTableQuery);
-            }
-            else
-            {
-                Console.WriteLine("Таблица Врачи уже создана");
             }
         }
 
@@ -157,11 +117,6 @@ namespace ServerAspWebApi.Services
                 {
                     string insertQuery = $"INSERT INTO Участки (Номер) VALUES ('{region}')";
                     ExecuteNonQuery(insertQuery);
-                    Debug.WriteLine($"Вставлен: {region}");
-                }
-                else
-                {
-                    Debug.WriteLine($"Запись '{region}' уже существует.");
                 }
             }
         }
@@ -185,11 +140,6 @@ namespace ServerAspWebApi.Services
                 {
                     string insertQuery = $"INSERT INTO Специализации (Название) VALUES (N'{specialization}')";
                     ExecuteNonQuery(insertQuery);
-                    Debug.WriteLine($"Вставлена специализация: {specialization}");
-                }
-                else
-                {
-                    Debug.WriteLine($"Специализация '{specialization}' уже существует.");
                 }
             }
         }
@@ -213,11 +163,6 @@ namespace ServerAspWebApi.Services
                 {
                     string insertQuery = $"INSERT INTO Кабинеты (Номер) VALUES ('{cabinet}')";
                     ExecuteNonQuery(insertQuery);
-                    Debug.WriteLine($"Вставлен кабинет: {cabinet}");
-                }
-                else
-                {
-                    Debug.WriteLine($"Кабинет '{cabinet}' уже существует.");
                 }
             }
         }
@@ -246,11 +191,6 @@ namespace ServerAspWebApi.Services
                 {
                     string insertQuery = $"INSERT INTO Пациенты (Фамилия, Имя, Отчество, Адрес, ДатаРождения, Пол, Участок) VALUES (N'{patient.Фамилия}', N'{patient.Имя}', N'{patient.Отчество}', N'{patient.Адрес}', '{patient.ДатаРождения:yyyy-MM-dd}', N'{patient.Пол}', {patient.Участок})";
                     ExecuteNonQuery(insertQuery);
-                    Debug.WriteLine($"Вставлен пациент: {patient.Фамилия} {patient.Имя} {patient.Отчество}");
-                }
-                else
-                {
-                    Debug.WriteLine($"Пациент '{patient.Фамилия} {patient.Имя} {patient.Отчество}' уже существует.");
                 }
             }
         }
@@ -279,11 +219,6 @@ namespace ServerAspWebApi.Services
                 {
                     string insertQuery = $"INSERT INTO Врачи (ФИО, Кабинет, Специализация, Участок) VALUES (N'{patient.ФИО}', '{patient.Кабинет}', N'{patient.Специализация}', '{patient.Участок}')";
                     ExecuteNonQuery(insertQuery);
-                    Debug.WriteLine($"Вставлен врач: {patient.ФИО} {patient.Кабинет} {patient.Специализация}");
-                }
-                else
-                {
-                    Debug.WriteLine($"Врач '{patient.ФИО} {patient.Кабинет} {patient.Специализация}' уже существует.");
                 }
             }
         }
@@ -306,7 +241,7 @@ namespace ServerAspWebApi.Services
                     }
                 }
             }
-            catch 
+            catch
             {
                 return false;
             }
