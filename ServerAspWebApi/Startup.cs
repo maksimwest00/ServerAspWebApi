@@ -20,6 +20,8 @@ namespace ServerAspWebApi
         {
             services.AddControllers();
             services.AddSingleton<DataBaseService>();
+            services.AddSingleton<DoctorTableEnviroment>();
+            services.AddSingleton<PatientTableEnviroment>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

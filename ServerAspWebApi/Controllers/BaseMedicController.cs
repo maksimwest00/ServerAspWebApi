@@ -6,13 +6,13 @@ namespace ServerAspWebApi.Controllers
 {
     public abstract class BaseMedicController : ControllerBase
     {
-        //-Добавление записи
-        [HttpPost("add")]
-        public abstract Task<IActionResult> AddRecord([FromBody] PatientModel patient);
+        ////-Добавление записи
+        //[HttpPost("add")]
+        //public abstract Task<IActionResult> AddRecord([FromBody] object record);
 
-        //-Редактирование записи
-        [HttpPost("edit")]
-        public abstract Task<IActionResult> EditRecord<T>([FromBody] T model);
+        ////-Редактирование записи
+        //[HttpPost("edit")]
+        //public abstract Task<IActionResult> EditRecord([FromBody] object model);
 
         //-Удаление записи
         [HttpPost("delete")]
